@@ -8,8 +8,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.ashspokedex.presentation.detail.PokemonDetailScreen
+import com.example.ashspokedex.presentation.detail.PokemonDetailViewModel
+import com.example.ashspokedex.presentation.list.PokemonListScreen
+import com.example.ashspokedex.presentation.list.PokemonListViewModel
 import com.example.ashspokedex.ui.theme.AshsPokedexTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -19,13 +30,48 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AshsPokedexTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Android")
+
+                val navController = rememberNavController()
+                val pokemonListViewModel:PokemonListViewModel = hiltViewModel()
+                LaunchedEffect(Unit){
+                    pokemonListViewModel.listScreenUiEvents.getPokemonList()
                 }
+
+
+                NavHost(
+                    navController = navController ,
+                    startDestination = "pokemon_list_screen"){
+
+                    composable(
+                        route = "pokemon_list_screen"
+                    ){
+
+                        PokemonListScreen(
+                            navController = navController,
+                            pokemonlistScreenUIEvents = pokemonListViewModel.listScreenUiEvents,
+                            pokemonListScreenStates = pokemonListViewModel._listScreenState,
+                            cardTapped = pokemonListViewModel.cardTapped
+                        )
+
+                    }
+
+                    composable(
+                        route ="pokemon_detail_screen/{pokemonName}",
+                        arguments = listOf(
+                            navArgument(name = "pokemonName"){
+                                type = NavType.StringType
+                            }
+                        )
+                    ){
+                        val pokemonDetailViewModel = hiltViewModel<PokemonDetailViewModel>()
+                        val pokemonName = it.arguments?.getString("pokemonName")
+                        LaunchedEffect(Unit) {
+                            pokemonDetailViewModel.fetchPokemonStats(pokemonName?:"")
+                        }
+                        PokemonDetailScreen(navController = navController , pokemonDetailScreenStates = pokemonDetailViewModel._detailScreenStates )
+                    }
+                }
+
             }
         }
     }

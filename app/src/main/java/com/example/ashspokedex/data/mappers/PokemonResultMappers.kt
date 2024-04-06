@@ -10,7 +10,7 @@ import com.example.ashspokedex.domain.models.detail.PokeStats
 import com.example.ashspokedex.domain.models.detail.PokeType
 import com.example.ashspokedex.domain.models.detail.PokemonDetailResult
 import com.example.ashspokedex.domain.models.list.PokemonListResult
-import com.example.ashspokedex.domain.models.list.PokemonName
+import com.example.ashspokedex.domain.models.list.PokemonNameAndId
 
 //-----------------------------------------------------------------
 
@@ -18,11 +18,26 @@ fun PokemonListResultDto.toPokemonListResult():PokemonListResult{
     return PokemonListResult(mapAllNameListResults(results?: emptyList()))
 }
 
-fun Result.toPokemonName():PokemonName{
-    return PokemonName(name=name?:"")
+fun Result.toPokemonName():PokemonNameAndId{
+    return PokemonNameAndId(name=name?:"", pokeId = calulatePokeId(url?:""))
 }
 
-fun mapAllNameListResults(results:List<Result>):List<PokemonName>{
+fun calulatePokeId(url:String):Int{
+    if(url==""){
+        return 0
+    }
+    val rev = url.reversed()
+    var idx = 1
+    var numSys = 1
+    var pokeId = 0
+    while(rev[idx] !='/'){
+        pokeId += numSys * rev[idx].digitToInt()
+        numSys*=10
+        idx++
+    }
+    return pokeId
+}
+fun mapAllNameListResults(results:List<Result>):List<PokemonNameAndId>{
     return results.map {
         it.toPokemonName()
     }
