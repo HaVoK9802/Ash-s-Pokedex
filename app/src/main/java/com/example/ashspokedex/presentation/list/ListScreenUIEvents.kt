@@ -8,4 +8,6 @@ interface ListScreenUIEvents {
 
   fun setCardTappedToTrue(cardTappedValue:Boolean)
 
+//  fun returnUpdatedQuery(query:String)
+
 }

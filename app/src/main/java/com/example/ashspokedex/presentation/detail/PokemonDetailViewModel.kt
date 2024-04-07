@@ -10,6 +10,7 @@ import com.example.ashspokedex.domain.repository.PokemonRepository
 import com.example.ashspokedex.utils.RequestStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -21,9 +22,17 @@ class PokemonDetailViewModel @Inject constructor(val pokemonRepository:PokemonRe
 
 
     var _detailScreenStates by mutableStateOf(DetailScreenStates())
-    val detailScreenStates by mutableStateOf(_detailScreenStates)
+//    val detailScreenStates by mutableStateOf(_detailScreenStates)
 
+    var backIconTapped = true
 
+    fun tapBackIcon(){
+        backIconTapped = false
+        viewModelScope.launch(Dispatchers.Main){
+            delay(800)
+            backIconTapped = true
+        }
+    }
 
     fun fetchPokemonStats(name:String){
 

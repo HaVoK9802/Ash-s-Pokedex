@@ -1,6 +1,7 @@
 package com.example.ashspokedex.presentation.list
 
 import android.util.Log
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -18,15 +19,17 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.http.Query
 import javax.inject.Inject
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(pokemonRepository: PokemonRepository) : ViewModel() {
+//    var searchedQuery by mutableStateOf("")
+//    val listScreenState by mutableStateOf(_listScreenState)
+
     var _listScreenState by mutableStateOf(ListScreenStates())
-    val listScreenState by mutableStateOf(_listScreenState)
     var cardTapped:Boolean = false
     val listScreenUiEvents = ListScreenUIEventsImpl(pokemonRepository)
-
 
 
     inner class ListScreenUIEventsImpl(private val pokemonRepository: PokemonRepository) : ListScreenUIEvents {
@@ -35,20 +38,36 @@ class PokemonListViewModel @Inject constructor(pokemonRepository: PokemonReposit
             //this will only last some time before revertCardTapped() does it's job
             cardTapped = true
         }
+
+//        override fun returnUpdatedQuery(query: String){
+////            viewModelScope.launch(Dispatchers.Main){
+////                delay(200)
+////                searchedQuery = query
+////            }
+//            searchedQuery = query
+//        }
         override fun liveSearch(updatedPokemonQuery: String) {
+            //----SYNCHRONOUS EVENTS
+
+            // viewModelScope.launch(Dispatchers.Main){
+
+            _listScreenState = _listScreenState.copy(searchQueryValue = updatedPokemonQuery)
+
+            //once coroutineScope is involved, it will become asynchronous. Thus will lead to inconsistencies in the TextField
+
+            // }
+
+            //----ASYNCHRONOUS EVENTS
            viewModelScope.launch(Dispatchers.Default){
                if(updatedPokemonQuery==""){
                    val originalList = _listScreenState.pokemonList
-
                    withContext(Dispatchers.Main){
                        _listScreenState = _listScreenState.copy(
                            pokemonListCopy = originalList,
                            sortingToggle = true,
-                           searchQueryValue = ""
+//                           searchQueryValue = ""
                        )
                    }
-
-
                }
                else {
                    val filterByStartingStringMatch = _listScreenState.pokemonList.filter { it.name.startsWith(updatedPokemonQuery) }
@@ -57,29 +76,22 @@ class PokemonListViewModel @Inject constructor(pokemonRepository: PokemonReposit
                    val copyList = filterByStartingStringMatch.toMutableList()
                        for(pokemon in filterByRelevance){
                            if(!copyList.contains(pokemon)){
-                               copyList.add(pokemon)
-                           }
-                       }
+                               copyList.add(pokemon) } }
                        withContext(Dispatchers.Main){
                            _listScreenState = _listScreenState.copy(
                                pokemonListCopy = copyList.toList(),
                                sortingToggle = true,
-                               searchQueryValue = updatedPokemonQuery
+//                               searchQueryValue = updatedPokemonQuery
                            )
                        }
-
-
-
-
                    } else{
                          withContext(Dispatchers.Main){
                              _listScreenState = _listScreenState.copy(
                                  pokemonListCopy = filterByRelevance,
                                  sortingToggle = true,
-                                 searchQueryValue = updatedPokemonQuery
+//                                 searchQueryValue = updatedPokemonQuery
                              )
                          }
-
                    }
                }
            }
@@ -95,7 +107,7 @@ class PokemonListViewModel @Inject constructor(pokemonRepository: PokemonReposit
                               pokemonList = pokemonListResult.pokemonList
                           )
                       }
-                      liveSearch("")
+                      liveSearch("mega")
                   }
                   catch (e:Exception){
                       withContext(Dispatchers.Main) {

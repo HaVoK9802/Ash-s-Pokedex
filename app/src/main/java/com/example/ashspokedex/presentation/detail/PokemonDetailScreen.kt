@@ -49,7 +49,12 @@ import com.example.pokdex.ui.theme.SpdColor
 import kotlin.math.round
 
 @Composable
-fun PokemonDetailScreen(navController: NavController, pokemonDetailScreenStates: DetailScreenStates) {
+fun PokemonDetailScreen(
+    navController: NavController,
+    pokemonDetailScreenStates: DetailScreenStates,
+    tapBackIcon:()->Unit,
+    backIconTapped:Boolean,
+) {
 
 
     when (pokemonDetailScreenStates.pokeDetailStatus) {
@@ -61,10 +66,14 @@ fun PokemonDetailScreen(navController: NavController, pokemonDetailScreenStates:
             )
         }
         is RequestStatus.Success -> {
-            PokemonStatsContainer(pokemonDetailScreenStates,navController)
+            PokemonStatsContainer(
+                pokemonDetailScreenStates,
+                navController,
+                tapBackIcon,
+                backIconTapped
+            )
         }
         is RequestStatus.Error -> Text(text = "Failed to fetch")
-
     }
 
 }
@@ -72,11 +81,22 @@ fun PokemonDetailScreen(navController: NavController, pokemonDetailScreenStates:
 
 
 @Composable
-fun PokemonStatsContainer(pokemonDetailScreenStates:DetailScreenStates,navController: NavController) {
+fun PokemonStatsContainer(
+    pokemonDetailScreenStates:DetailScreenStates,
+    navController: NavController,
+    tapBackIcon:()->Unit,
+    backIconTapped:Boolean,
+
+) {
     Column(modifier = Modifier
         .fillMaxSize()
         .background(color = Color(0xfffe0065))) {
-        TopBar( navController = navController,pokemonDetailScreenStates)
+        TopBar(
+            navController = navController,
+            pokemonDetailScreenStates,
+            tapBackIcon,
+            backIconTapped
+            )
         PokedexImageContainer(pokemonDetailScreenStates = pokemonDetailScreenStates)
         PokemonDetailContainer(pokemonDetailScreenStates =pokemonDetailScreenStates)
     }
@@ -84,7 +104,13 @@ fun PokemonStatsContainer(pokemonDetailScreenStates:DetailScreenStates,navContro
 
 
 @Composable
-fun TopBar(navController: NavController, pokemonDetailScreenStates: DetailScreenStates){
+fun TopBar(
+           navController: NavController,
+           pokemonDetailScreenStates: DetailScreenStates,
+           tapBackIcon:()->Unit,
+           backIconTapped:Boolean,
+
+){
     Box(modifier = Modifier
         .fillMaxWidth()
         .height(110.dp)
@@ -99,7 +125,11 @@ fun TopBar(navController: NavController, pokemonDetailScreenStates: DetailScreen
 
         ) {
 
-            NavIcon(navController = navController)
+            NavIcon(
+                navController = navController,
+                tapBackIcon,
+                backIconTapped
+            )
 
 
         }
@@ -167,14 +197,25 @@ fun PokemonTypeIndicator(pokemonDetailScreenStates: DetailScreenStates){
 }
 
 @Composable
-fun NavIcon(navController: NavController){
+fun NavIcon(
+    navController: NavController,
+    tapBackIcon:()->Unit,
+    backIconTapped:Boolean,
+){
     Box(modifier = Modifier
         .height(76.dp)
         .width(76.dp)
         .clip(CircleShape)
         .background(Color.DarkGray)
+        .clickable {
+            if(backIconTapped) {
+                tapBackIcon()
+                navController.popBackStack()
+            }
+                   }
         ,
-        contentAlignment = Alignment.Center) {
+        contentAlignment = Alignment.Center
+    ) {
 
 
         Box(
@@ -183,8 +224,10 @@ fun NavIcon(navController: NavController){
                 .width(72.dp)
                 .clip(CircleShape)
                 .background(color = Color(0xffffffff))
+
             ,
             contentAlignment = Alignment.Center
+
         ) {
 
             Box(
@@ -205,7 +248,7 @@ fun NavIcon(navController: NavController){
                         .clip(CircleShape)
                         .background(color = Color(0xff2e99cc))
                         .padding(11.dp)
-                        .clickable { navController.popBackStack() }
+
                     ,
                     contentAlignment = Alignment.Center
 
@@ -498,18 +541,18 @@ fun DecorationBallsPreview(){
 @Preview
 @Composable
 fun NavIconPreview(){
-    NavIcon(navController = rememberNavController())
+    NavIcon(navController = rememberNavController(), tapBackIcon = {},backIconTapped = false)
 }
 
 @Preview
 @Composable
 fun TopBarPreview(){
-    TopBar( navController = rememberNavController(), pokemonDetailScreenStates = DetailScreenStates())
+    TopBar( navController = rememberNavController(), pokemonDetailScreenStates = DetailScreenStates(), tapBackIcon = {},backIconTapped = false)
 }
 
 
 @Preview
 @Composable
 fun PokemonDetailScreenPreview(){
-    PokemonDetailScreen( navController = rememberNavController(),pokemonDetailScreenStates = DetailScreenStates())
+    PokemonDetailScreen( navController = rememberNavController(),pokemonDetailScreenStates = DetailScreenStates(), tapBackIcon = {},backIconTapped = false)
 }

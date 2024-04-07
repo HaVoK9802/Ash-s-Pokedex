@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,7 +54,13 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun PokemonListScreen(navController: NavController, pokemonlistScreenUIEvents: ListScreenUIEvents, pokemonListScreenStates :ListScreenStates, cardTapped: Boolean) {
+fun PokemonListScreen(
+//    searchQuery: String,
+    navController: NavController,
+    pokemonlistScreenUIEvents: ListScreenUIEvents,
+    pokemonListScreenStates :ListScreenStates,
+    cardTapped: Boolean
+) {
 
     Box(
         modifier = Modifier
@@ -78,7 +85,11 @@ fun PokemonListScreen(navController: NavController, pokemonlistScreenUIEvents: L
                 ,
                 verticalAlignment = Alignment.CenterVertically
             ){
-                SearchBar(pokemonlistScreenUIEvents=pokemonlistScreenUIEvents, pokemonListScreenStates =pokemonListScreenStates)
+                SearchBar(
+//                    searchQuery = searchQuery,
+                    pokemonlistScreenUIEvents=pokemonlistScreenUIEvents,
+                    pokemonListScreenStates =pokemonListScreenStates
+                )
             }
 
 
@@ -194,17 +205,26 @@ fun Pokeball() {
 
 
 @Composable
-fun SearchBar( pokemonlistScreenUIEvents: ListScreenUIEvents, pokemonListScreenStates :ListScreenStates) {
+fun SearchBar(
+//    searchQuery:String,
+    pokemonlistScreenUIEvents: ListScreenUIEvents,
+    pokemonListScreenStates :ListScreenStates
+)
+{
 
-    var searchQueryValue:String = ""
 
     OutlinedTextField(
-        value = pokemonListScreenStates.searchQueryValue,
+        value = pokemonListScreenStates.searchQueryValue //async when coroutineScope is involved leading to inconsistencies.
+//         value = searchQuery //synchronous update
+        ,
         onValueChange = {
-            searchQueryValue = it.lowercase()
+
             Log.d("Search Query",it)
-            pokemonlistScreenUIEvents.liveSearch(it.lowercase())
+//            pokemonlistScreenUIEvents.returnUpdatedQuery(it) //synchronous update
+            pokemonlistScreenUIEvents.liveSearch(it)
         },
+
+
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
@@ -217,7 +237,6 @@ fun SearchBar( pokemonlistScreenUIEvents: ListScreenUIEvents, pokemonListScreenS
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search icon",
                 modifier = Modifier.clickable {
-                    pokemonlistScreenUIEvents.liveSearch(searchQueryValue)
                 })
         },
         trailingIcon = {
@@ -271,12 +290,14 @@ fun PokeCard(pokemonlistScreenUIEvents: ListScreenUIEvents, navController: NavCo
             .clip(RoundedCornerShape(10.dp))
             .aspectRatio(0.75f)
             .background(Color(255, 255, 255, 255))
-            .clickable {
+            .clickable(enabled = !cardTapped) {
                 if (!cardTapped) {
                     pokemonlistScreenUIEvents.setCardTappedToTrue(cardTapped)
                     pokemonlistScreenUIEvents.revertCardTapped()
+                    Log.d("card tapped allowed", cardTapped.toString())
                     navController.navigate("pokemon_detail_screen/${name}")
                 }
+
             }
         , contentAlignment = Alignment.Center
     ){
@@ -330,6 +351,10 @@ fun PokeCardPreview(){
         override fun setCardTappedToTrue(cardTappedValue: Boolean) {
             TODO("Not yet implemented")
         }
+
+//        override fun returnUpdatedQuery(): String {
+//            TODO("Not yet implemented")
+//        }
     }, navController= rememberNavController(), name="pika", pokeId=0, cardTapped = true)
 }
 
@@ -363,6 +388,10 @@ fun SearchBarPreview() {
         override fun setCardTappedToTrue(cardTappedValue: Boolean) {
             TODO("Not yet implemented")
         }
+//
+//        override fun returnUpdatedQuery(): String {
+//            TODO("Not yet implemented")
+//        }
     }, pokemonListScreenStates =ListScreenStates())
 }
 
@@ -390,5 +419,9 @@ fun PokemonListScreenPreview() {
         override fun setCardTappedToTrue(cardTappedValue: Boolean) {
             TODO("Not yet implemented")
         }
+
+//        override fun returnUpdatedQuery(): String {
+//            TODO("Not yet implemented")
+//        }
     }, pokemonListScreenStates =ListScreenStates(), cardTapped=true)
 }

@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
                     ){
 
                         PokemonListScreen(
+//                            searchQuery = pokemonListViewModel.searchedQuery,
                             navController = navController,
                             pokemonlistScreenUIEvents = pokemonListViewModel.listScreenUiEvents,
                             pokemonListScreenStates = pokemonListViewModel._listScreenState,
@@ -68,7 +69,12 @@ class MainActivity : ComponentActivity() {
                         LaunchedEffect(Unit) {
                             pokemonDetailViewModel.fetchPokemonStats(pokemonName?:"")
                         }
-                        PokemonDetailScreen(navController = navController , pokemonDetailScreenStates = pokemonDetailViewModel._detailScreenStates )
+                        PokemonDetailScreen(
+                            navController = navController ,
+                            pokemonDetailScreenStates = pokemonDetailViewModel._detailScreenStates,
+                            tapBackIcon = {pokemonDetailViewModel.tapBackIcon()},
+                            backIconTapped = pokemonDetailViewModel.backIconTapped
+                        )
                     }
                 }
 
