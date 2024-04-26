@@ -13,14 +13,20 @@ import com.example.ashspokedex.domain.models.list.PokemonListResult
 import com.example.ashspokedex.domain.repository.PokemonRepository
 import com.example.ashspokedex.utils.RequestStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.newCoroutineContext
 import kotlinx.coroutines.withContext
 import retrofit2.http.Query
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(pokemonRepository: PokemonRepository) : ViewModel() {
@@ -49,13 +55,13 @@ class PokemonListViewModel @Inject constructor(pokemonRepository: PokemonReposit
         override fun liveSearch(updatedPokemonQuery: String) {
             //----SYNCHRONOUS EVENTS
 
-            // viewModelScope.launch(Dispatchers.Main){
+//             viewModelScope.launch{
 
             _listScreenState = _listScreenState.copy(searchQueryValue = updatedPokemonQuery)
 
             //once coroutineScope is involved, it will become asynchronous. Thus will lead to inconsistencies in the TextField
 
-            // }
+//             }
 
             //----ASYNCHRONOUS EVENTS
            viewModelScope.launch(Dispatchers.Default){
@@ -67,9 +73,30 @@ class PokemonListViewModel @Inject constructor(pokemonRepository: PokemonReposit
                            sortingToggle = true,
 //                           searchQueryValue = ""
                        )
+
                    }
+                   //CoroutineScope is a function that is used create a scope for coroutines to be started and controlled
+                   //takes in the CoroutineContext as argument and uses launch and async (coroutine builders) as extension functions
+                   val scope = CoroutineScope(
+                       //CoroutineContext consists of
+                       // Job(), - controls the lifecyle of the coroutine, unique to a given coroutine
+                       // Dispatcher, - dispatches work to the appropiate thread
+                       // CoroutineName - gives coroutine a name for error handling purposes
+                       // and Exception Handler - ...
+
+                       Job()+
+                               Dispatchers.Main+
+                               CoroutineName("hello")
+
+//                   +CoroutineExceptionHandler()
+                   )
+                   val job = scope.launch {  }
+
+
+
                }
                else {
+
                    val filterByStartingStringMatch = _listScreenState.pokemonList.filter { it.name.startsWith(updatedPokemonQuery) }
                    val filterByRelevance =  _listScreenState.pokemonList.filter{ updatedPokemonQuery in it.name }
                    if (filterByStartingStringMatch.isNotEmpty()) {
