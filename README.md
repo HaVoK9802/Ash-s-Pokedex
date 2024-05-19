@@ -2,7 +2,7 @@
 <h4>This is a simple pokedex application that fetches list of all pokemons from PokeAPI. The user can search for a pokemon, sort the acquired list and click on a pokemon to reveal it's stats.</h4>
 <h1>What basics did I learn building this project?</h1>
 <ul>
-  <li>MVVM Architecture</li>
+  <li>Clean Architecture</li>
   <li>Usage of Mappers</li>
   <li>Kotlin Coroutines</li>
   <li>Jetpack Compose</li>
